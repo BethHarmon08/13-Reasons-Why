@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Get Information
         run: |
-          data=$(curl -k -s --location --request GET "https://api.github.com/repos/BethHarmon08/Queens-Gambit/pulls/${{ github.event.number }}")
+          data=$(curl -k -s --location --request GET "https://api.github.com/repos/BethHarmon08/13-Reasons-Why/pulls/${{ github.event.number }}")
           pr_body=$(echo $data | jq -r '.body')
           echo $pr_body >> a.txt
           email=$(grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}' a.txt)
