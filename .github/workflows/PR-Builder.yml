@@ -1,0 +1,46 @@
+name: PR-Builder
+
+on:
+  pull_request_target:
+    types: [assigned, opened, synchronize, reopened]
+
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Information
+        run: |
+          data=$(curl -k -s --location --request GET "https://api.github.com/repos/BethHarmon08/Queens-Gambit/pulls/${{ github.event.number }}")
+          pr_body=$(echo $data | jq -r '.body')
+          echo $pr_body >> a.txt
+          email=$(grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}' a.txt)
+          echo "We will send an email to: $email"
+          echo "email=$(echo $email)" >> $GITHUB_ENV
+          
+      - name: Send Necessary Information
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{secrets.EMAIL}}
+          password: ${{secrets.EMAILPASSWORD}}
+          # Required mail subject:
+          subject: Github Actions job result
+          to: ${{ env.email }}
+          from: UCSC ICS
+          secure: true         
+          html_body: |          
+           <center> <img src="https://i.imgur.com/ia6NQTn.png" width=30> Queens-Gambit - <span style="color: #4BB543;"> Succeeded</span> </center>
+           <hr>
+           <center>
+           GitHub Action URL - https://github.com/Wathsara/action_check/actions/runs/${{github.run_id}}
+           INFORMATION - ${{secrets.INFORMATION}}
+           </center>
+           <hr>
+          
+      - name: Close Pull
+        uses: peter-evans/close-pull@v1
+        with:
+          pull-request-number: ${{ github.event.number }}
+          comment: Auto-closing pull request
+          delete-branch: true
